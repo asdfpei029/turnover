@@ -126,7 +126,7 @@
     .divider {
       border: none;
       border-top: 2px solid #1A4B7A;
-      margin: 18px 0 12px;
+      margin: 24px 0 14px;
     }
     .foot {
       font-size: 11px;
@@ -145,10 +145,54 @@
     .leg { display: flex; align-items: center; gap: 4px; }
     .leg-dot { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
     .remind-box {
-      margin-top: 10px;
+      margin-top: 14px;
       background: #f5f5f3;
       border-radius: 8px;
       padding: 10px 14px;
+    }
+    /* Chart section */
+    .chart-section {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 2px solid #1A4B7A;
+    }
+    .chart-section-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1A4B7A;
+      margin: 0 0 4px;
+    }
+    .chart-section-sub {
+      font-size: 11px;
+      color: #5f5e5a;
+      margin: 0 0 12px;
+    }
+    .chart-legend {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: #5f5e5a;
+      flex-wrap: wrap;
+    }
+    .chart-legend span { display: flex; align-items: center; gap: 5px; }
+    .chart-legend .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .chart-col-label {
+      font-size: 11px;
+      color: #5f5e5a;
+      margin: 0 0 6px;
+      font-weight: 500;
+    }
+    .chart-badge-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
     }
     @media (max-width: 768px) {
       body { padding: 0.5rem; }
@@ -157,12 +201,14 @@
       .tbl { font-size: 10px; }
       .tbl th { font-size: 9.5px; padding: 4px 3px; }
       .tbl td { padding: 4px 3px; }
+      .charts-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 <div class="wrap">
 
+  <!-- ===== HEADER ===== -->
   <div class="top-bar">
     <p class="title">2026 Q1 胸腔科各VS住院效率總整理</p>
     <p class="sub">202601–202603｜ALOS/CMI 越低越佳｜綠=達標 紅=超標</p>
@@ -172,6 +218,7 @@
     目標值：ICU ALOS≤8.10天 / ALOS/CMI≤3.28｜Ward ALOS≤7.26天 / ALOS/CMI≤5.59｜CMI分層（分析用）：&gt;2高複雜 / 1–2中 / &lt;1低複雜
   </div>
 
+  <!-- ===== ICU TABLE ===== -->
   <div class="section-hdr">
     <span>ICU 加護病房</span>
     <span class="badge" style="background:#D6E4F0;color:#0C447C;">整體 ALOS 7.23 ✅ 達標（目標 8.10）</span>
@@ -205,6 +252,7 @@
     <tbody id="icu-body"></tbody>
   </table>
 
+  <!-- ===== WARD TABLE ===== -->
   <hr class="divider">
 
   <div class="section-hdr">
@@ -249,6 +297,59 @@
     <tbody id="ward-body"></tbody>
   </table>
 
+  <!-- ===== WARD CHARTS ===== -->
+  <div class="chart-section">
+    <p class="chart-section-title">Ward 各VS 住院天數分布（案數% vs 人日%）</p>
+    <p class="chart-section-sub">案數% = 各VS病人中住幾天的比率｜人日% = 床位實際被佔用的比率｜兩者差距越大，代表少數長住案嚴重佔床</p>
+
+    <div class="chart-legend">
+      <span><span class="dot" style="background:#1D9E75"></span>&lt;7天（短期）</span>
+      <span><span class="dot" style="background:#378ADD"></span>7–14天（中期）</span>
+      <span><span class="dot" style="background:#D85A30"></span>&gt;14天（長住）— 橘色越高，長住案對資源影響越大</span>
+    </div>
+
+    <div class="charts-grid">
+      <div>
+        <p class="chart-col-label">案數分布（各VS有幾%的病人住幾天）</p>
+        <div style="position:relative;width:100%;height:300px;">
+          <canvas id="ward-case-chart"
+            role="img"
+            aria-label="Ward各VS案數百分比堆疊直條圖，林珮瑜43/28/29，蕭詠聰51/27/22，曾明雄53/26/21，游承翰46/35/19，簡林楨48/40/12，陳正昱70/26/4，黃健裕52/43/5">
+          </canvas>
+        </div>
+      </div>
+      <div>
+        <p class="chart-col-label">人日分布（各VS的床位被佔用比率）</p>
+        <div style="position:relative;width:100%;height:300px;">
+          <canvas id="ward-day-chart"
+            role="img"
+            aria-label="Ward各VS人日百分比堆疊直條圖，林珮瑜16/24/60，蕭詠聰16/24/59，曾明雄20/27/53，游承翰17/34/49，簡林楨23/37/41，陳正昱23/53/24，黃健裕24/61/16">
+          </canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ICU CHARTS ===== -->
+  <div class="chart-section">
+    <p class="chart-section-title">ICU 各VS 人日分布（人日%）</p>
+    <p class="chart-section-sub">ICU 整體達標，但林珮瑜與陳正昱的 &gt;14天人日佔比偏高，需個案追蹤</p>
+
+    <div class="chart-legend">
+      <span><span class="dot" style="background:#1D9E75"></span>&lt;7天</span>
+      <span><span class="dot" style="background:#378ADD"></span>7–14天</span>
+      <span><span class="dot" style="background:#D85A30"></span>&gt;14天</span>
+    </div>
+
+    <div style="position:relative;width:100%;height:280px;">
+      <canvas id="icu-day-chart"
+        role="img"
+        aria-label="ICU各VS人日百分比堆疊橫條圖，游承翰52/48/0，蕭詠聰100/0/0，曾明雄44/37/20，黃健裕26/35/39，林珮瑜5/63/32，陳正昱16/34/50">
+      </canvas>
+    </div>
+  </div>
+
+  <!-- ===== REMINDERS ===== -->
   <div class="remind-box">
     <p style="font-size:12px;font-weight:500;margin:0 0 5px;color:#1a1a1a;">科內重點提醒</p>
     <p class="foot">1. <span style="font-weight:500;color:#276221">標竿：陳正昱（Ward）</span>——CMI最高（1.82）但 &gt;14天案僅4%、人日24%。重症反而最快出院，請下次晨會分享出院準備SOP。</p>
@@ -259,32 +360,38 @@
 
 </div>
 
+<!-- ===== SCRIPTS ===== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <script>
-function makeBar(pct, color) {
-  return '<div class="bar-wrap"><div class="bar-inner" style="width:' + Math.min(pct,100) + '%;background:' + color + ';">' + pct + '%</div></div>';
-}
 
+/* ---- Table data ---- */
 var ICU_TGT_ALOS = 8.10, ICU_TGT_CMI = 3.28;
 var WARD_TGT_ALOS = 7.26, WARD_TGT_CMI = 5.59;
 
 var icuData = [
   { name:'游承翰', n:12, alos:1.92, alos25:7.39, cmi:0.80, cmi25:3.08, d1:52, d2:48, d3:0,  attr:'pill-g', txt:'✅ 效率最佳，快速週轉（案數少，持續觀察）' },
-  { name:'蕭詠聰', n:10, alos:4.00, alos25:7.86, cmi:1.66, cmi25:3.17, d1:100,d2:0,  d3:0,  attr:'pill-g', txt:'✅ 全案＜7天出院，ICU最高效' },
+  { name:'蕭詠聰', n:10, alos:4.00, alos25:7.86, cmi:1.66, cmi25:3.17, d1:100,d2:0,  d3:0,  attr:'pill-g', txt:'✅ 全案<7天出院，ICU最高效' },
   { name:'曾明雄', n:17, alos:4.82, alos25:7.36, cmi:2.11, cmi25:3.10, d1:44, d2:37, d3:20, attr:'pill-g', txt:'✅ 雙達標，較2025明顯改善' },
   { name:'黃健裕', n:41, alos:5.42, alos25:6.14, cmi:2.87, cmi25:2.25, d1:26, d2:35, d3:39, attr:'pill-g', txt:'✅ 達標，案數最多，整體穩定' },
-  { name:'林珮瑜', n:12, alos:9.67, alos25:7.72, cmi:4.71, cmi25:3.14, d1:5,  d2:63, d3:32, attr:'pill-r', txt:'❌ ALOS+CMI雙超標，＞14天人日32%，需個案追蹤' },
+  { name:'林珮瑜', n:12, alos:9.67, alos25:7.72, cmi:4.71, cmi25:3.14, d1:5,  d2:63, d3:32, attr:'pill-r', txt:'❌ ALOS+CMI雙超標，>14天人日32%，需個案追蹤' },
   { name:'陳正昱', n:26, alos:9.31, alos25:6.05, cmi:3.67, cmi25:2.49, d1:16, d2:34, d3:50, attr:'pill-y', txt:'⚠️ 高CMI案85%，長住有合理性，可檢討轉出時機' }
 ];
 
 var wardData = [
   { name:'陳正昱', n:23, alos:4.63, alos25:7.35, cmi:2.66, cmi25:5.51, case14:4,  d1:23, d2:53, d3:24, attr:'pill-g', txt:'✅ 標竿：重症最快出院，流程最優' },
-  { name:'黃健裕', n:42, alos:6.32, alos25:5.77, cmi:4.79, cmi25:4.11, case14:5,  d1:24, d2:61, d3:16, attr:'pill-g', txt:'✅ 雙達標，＞14天人日僅16%，出院流程穩定' },
+  { name:'黃健裕', n:42, alos:6.32, alos25:5.77, cmi:4.79, cmi25:4.11, case14:5,  d1:24, d2:61, d3:16, attr:'pill-g', txt:'✅ 雙達標，>14天人日僅16%，出院流程穩定' },
   { name:'簡林楨', n:52, alos:7.18, alos25:8.25, cmi:7.59, cmi25:6.46, case14:12, d1:23, d2:37, d3:41, attr:'pill-y', txt:'⚠️ ALOS達標但ALOS/CMI超標，出院可再提前' },
-  { name:'游承翰', n:88, alos:7.55, alos25:8.43, cmi:6.73, cmi25:6.40, case14:19, d1:17, d2:34, d3:49, attr:'pill-y', txt:'⚠️ ＞14天人日49%，長住需個案確認是否醫療因素' },
-  { name:'曾明雄', n:66, alos:6.87, alos25:5.50, cmi:6.72, cmi25:3.93, case14:21, d1:20, d2:27, d3:53, attr:'pill-r', txt:'❌ 較2025惡化，低CMI案多，＞14天人日53%' },
-  { name:'蕭詠聰', n:49, alos:7.61, alos25:5.50, cmi:6.64, cmi25:3.93, case14:22, d1:16, d2:24, d3:59, attr:'pill-r', txt:'❌ 較2025惡化，＞14天人日59%，輕重症均有出院延遲' },
-  { name:'林珮瑜', n:93, alos:8.34, alos25:8.33, cmi:9.58, cmi25:6.62, case14:29, d1:16, d2:24, d3:60, attr:'pill-r', txt:'❌ CMI最低（1.18）但＞14天人日60%，輕症久占床，優先追蹤' }
+  { name:'游承翰', n:88, alos:7.55, alos25:8.43, cmi:6.73, cmi25:6.40, case14:19, d1:17, d2:34, d3:49, attr:'pill-y', txt:'⚠️ >14天人日49%，長住需個案確認是否醫療因素' },
+  { name:'曾明雄', n:66, alos:6.87, alos25:5.50, cmi:6.72, cmi25:3.93, case14:21, d1:20, d2:27, d3:53, attr:'pill-r', txt:'❌ 較2025惡化，低CMI案多，>14天人日53%' },
+  { name:'蕭詠聰', n:49, alos:7.61, alos25:5.50, cmi:6.64, cmi25:3.93, case14:22, d1:16, d2:24, d3:59, attr:'pill-r', txt:'❌ 較2025惡化，>14天人日59%，輕重症均有出院延遲' },
+  { name:'林珮瑜', n:93, alos:8.34, alos25:8.33, cmi:9.58, cmi25:6.62, case14:29, d1:16, d2:24, d3:60, attr:'pill-r', txt:'❌ CMI最低（1.18）但>14天人日60%，輕症久占床，優先追蹤' }
 ];
+
+/* ---- Build tables ---- */
+function makeBar(pct, color) {
+  return '<div class="bar-wrap"><div class="bar-inner" style="width:' + Math.min(pct,100) + '%;background:' + color + ';">' + pct + '%</div></div>';
+}
 
 var icuBody = document.getElementById('icu-body');
 icuData.forEach(function(r) {
@@ -329,6 +436,131 @@ wardData.forEach(function(r) {
     '<td><span class="pill ' + r.attr + '">' + r.txt + '</span></td>' +
   '</tr>';
 });
+
+/* ---- Chart data ---- */
+var C_GREEN = '#1D9E75';
+var C_BLUE  = '#378ADD';
+var C_RED   = '#D85A30';
+
+var wardLabels = ['林珮瑜','蕭詠聰','曾明雄','游承翰','簡林楨','陳正昱','黃健裕'];
+
+var wardCaseD1 = [43, 51, 53, 46, 48, 70, 52];
+var wardCaseD2 = [28, 27, 26, 35, 40, 26, 43];
+var wardCaseD3 = [29, 22, 21, 19, 12,  4,  5];
+
+var wardDayD1  = [16, 16, 20, 17, 23, 23, 24];
+var wardDayD2  = [24, 24, 27, 34, 37, 53, 61];
+var wardDayD3  = [60, 59, 53, 49, 41, 24, 16];
+
+var icuLabels  = ['游承翰','蕭詠聰','曾明雄','黃健裕','林珮瑜','陳正昱'];
+var icuDayD1   = [52, 100, 44, 26,  5, 16];
+var icuDayD2   = [48,   0, 37, 35, 63, 34];
+var icuDayD3   = [ 0,   0, 20, 39, 32, 50];
+
+/* ---- Chart plugin & options ---- */
+Chart.register(ChartDataLabels);
+
+var dlVertical = {
+  color: '#fff',
+  font: { size: 11, weight: '600' },
+  formatter: function(v) { return v >= 8 ? v + '%' : ''; },
+  anchor: 'center',
+  align: 'center'
+};
+
+var dlHorizontal = {
+  color: '#fff',
+  font: { size: 11, weight: '600' },
+  formatter: function(v) { return v >= 8 ? v + '%' : ''; },
+  anchor: 'center',
+  align: 'center'
+};
+
+function makeVerticalDatasets(d1, d2, d3) {
+  return [
+    { label: '<7天',   data: d1, backgroundColor: C_GREEN, stack: 'a', borderWidth: 0, borderRadius: 0 },
+    { label: '7-14天', data: d2, backgroundColor: C_BLUE,  stack: 'a', borderWidth: 0, borderRadius: 0 },
+    { label: '>14天',  data: d3, backgroundColor: C_RED,   stack: 'a', borderWidth: 0, borderRadius: { topLeft:3, topRight:3 } }
+  ];
+}
+
+var verticalOpts = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: { callbacks: { label: function(c) { return ' ' + c.dataset.label + ': ' + c.raw + '%'; } } },
+    datalabels: dlVertical
+  },
+  scales: {
+    x: {
+      stacked: true,
+      grid: { display: false },
+      ticks: { font: { size: 11 }, color: '#555' },
+      border: { display: false }
+    },
+    y: {
+      stacked: true,
+      min: 0, max: 100,
+      grid: { color: 'rgba(0,0,0,0.06)' },
+      ticks: { callback: function(v) { return v + '%'; }, font: { size: 11 }, color: '#555', stepSize: 10 },
+      border: { display: false }
+    }
+  }
+};
+
+/* Ward case chart */
+new Chart(document.getElementById('ward-case-chart'), {
+  type: 'bar',
+  data: { labels: wardLabels, datasets: makeVerticalDatasets(wardCaseD1, wardCaseD2, wardCaseD3) },
+  options: JSON.parse(JSON.stringify(verticalOpts))
+});
+
+/* Ward day chart */
+new Chart(document.getElementById('ward-day-chart'), {
+  type: 'bar',
+  data: { labels: wardLabels, datasets: makeVerticalDatasets(wardDayD1, wardDayD2, wardDayD3) },
+  options: JSON.parse(JSON.stringify(verticalOpts))
+});
+
+/* ICU horizontal bar */
+new Chart(document.getElementById('icu-day-chart'), {
+  type: 'bar',
+  data: {
+    labels: icuLabels,
+    datasets: [
+      { label: '<7天',   data: icuDayD1, backgroundColor: C_GREEN, stack: 'a', borderWidth: 0, borderRadius: 0 },
+      { label: '7-14天', data: icuDayD2, backgroundColor: C_BLUE,  stack: 'a', borderWidth: 0, borderRadius: 0 },
+      { label: '>14天',  data: icuDayD3, backgroundColor: C_RED,   stack: 'a', borderWidth: 0, borderRadius: { topRight:3, bottomRight:3 } }
+    ]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: function(c) { return ' ' + c.dataset.label + ': ' + c.raw + '%'; } } },
+      datalabels: dlHorizontal
+    },
+    scales: {
+      x: {
+        stacked: true,
+        min: 0, max: 100,
+        grid: { color: 'rgba(0,0,0,0.06)' },
+        ticks: { callback: function(v) { return v + '%'; }, font: { size: 11 }, color: '#555' },
+        border: { display: false }
+      },
+      y: {
+        stacked: true,
+        grid: { display: false },
+        ticks: { font: { size: 12 }, color: '#333' },
+        border: { display: false }
+      }
+    }
+  }
+});
+
 </script>
 </body>
 </html>
