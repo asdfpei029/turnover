@@ -194,6 +194,84 @@
       flex-wrap: wrap;
       margin-bottom: 10px;
     }
+    /* VS interpretation cards */
+    .vs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .vs-card {
+      border-radius: 8px;
+      border: 0.5px solid #e0dfd8;
+      padding: 12px 14px;
+      background: #fff;
+    }
+    .vs-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .vs-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin: 0;
+    }
+    .vs-status {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+    .vs-metrics {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .vs-metric {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #f5f5f3;
+      color: #5f5e5a;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .vs-metric .num { font-weight: 500; color: #1a1a1a; }
+    .vs-metric .num.hi { color: #9C0006; }
+    .vs-metric .num.lo { color: #276221; }
+    .vs-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+      font-size: 11px;
+      color: #5f5e5a;
+    }
+    .vs-bar-label { width: 72px; flex-shrink: 0; text-align: right; }
+    .vs-bar-track {
+      flex: 1;
+      height: 14px;
+      background: #e8e8e5;
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+    }
+    .vs-bar-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; padding-left: 4px; }
+    .vs-bar-pct { font-size: 10px; color: #fff; font-weight: 500; white-space: nowrap; }
+    .vs-desc {
+      font-size: 11.5px;
+      color: #444;
+      line-height: 1.6;
+      margin: 8px 0 0;
+      padding-top: 8px;
+      border-top: 0.5px solid #e0dfd8;
+    }
+    .vs-desc strong { color: #1a1a1a; }
     @media (max-width: 768px) {
       body { padding: 0.5rem; }
       .wrap { padding: 0.75rem; border-radius: 8px; }
@@ -330,6 +408,13 @@
     </div>
   </div>
 
+  <!-- ===== WARD VS INTERPRETATION ===== -->
+  <div class="chart-section">
+    <p class="chart-section-title">Ward 各VS 逐一解讀（案數% vs 人日%）</p>
+    <p class="chart-section-sub">左圖橘色 = 該VS有幾%病人住&gt;14天（案數%）｜右圖橘色 = 這些長住案佔了幾%的床位資源（人日%）｜兩者差距越大代表問題越嚴重</p>
+    <div class="vs-grid" id="vs-cards"></div>
+  </div>
+
   <!-- ===== ICU CHARTS ===== -->
   <div class="chart-section">
     <p class="chart-section-title">ICU 各VS 人日分布（人日%）</p>
@@ -437,7 +522,101 @@ wardData.forEach(function(r) {
   '</tr>';
 });
 
-/* ---- Chart data ---- */
+/* ---- VS Interpretation Cards ---- */
+var vsInterpretations = [
+  {
+    name: '陳正昱',
+    status: '✅ 標竿',
+    statusClass: 'pill-g',
+    case14: 4,
+    day14: 24,
+    cmi: 1.82,
+    desc: '長住案極少，雖然每個長住案佔床久一點，但整體對資源影響最小。<strong>CMI最高（1.82）</strong>，代表收最重的病人仍能快速出院。案數%與人日%差距在全科最小，是流程管理的標竿，請下次晨會分享出院準備SOP。'
+  },
+  {
+    name: '黃健裕',
+    status: '✅ 達標',
+    statusClass: 'pill-g',
+    case14: 5,
+    day14: 16,
+    cmi: 1.48,
+    desc: '長住案少且每個案子佔床時間也短，是<strong>Ward床位管理效率最高者</strong>。7–14天案佔61%人日，中期住院管理最穩定，全科最佳表現之一。'
+  },
+  {
+    name: '簡林楨',
+    status: '⚠️ 部分達標',
+    statusClass: 'pill-y',
+    case14: 12,
+    day14: 41,
+    cmi: 1.35,
+    desc: '左右差距明顯放大——長住案比例還好（12%），但這12%的病人卻佔了<strong>41%的床位天數</strong>，代表長住個案每人住院時間相當長，不是均勻分布而是有幾個特別久的案子。建議優先找出這幾個超長住案，逐一追蹤。'
+  },
+  {
+    name: '游承翰',
+    status: '⚠️ 部分達標',
+    statusClass: 'pill-y',
+    case14: 19,
+    day14: 49,
+    cmi: 1.44,
+    desc: '長住案快到兩成，且人日佔比近五成。<strong>約五分之一的病人佔了一半的床</strong>。CMI屬中等（1.44），部分長住有醫療合理性，但仍有改善空間，出院時機可再提前。'
+  },
+  {
+    name: '曾明雄',
+    status: '❌ 超標',
+    statusClass: 'pill-r',
+    case14: 21,
+    day14: 53,
+    cmi: 1.35,
+    desc: '超過一半的床位天數被長住案吃掉，但<strong>平均CMI偏低（1.35）</strong>，代表這些長住的不是特別重症的病人。與2025相比ALOS/CMI惡化最多（+2.79），有明顯改善空間。建議逐案確認出院延遲原因。'
+  },
+  {
+    name: '蕭詠聰',
+    status: '❌ 超標',
+    statusClass: 'pill-r',
+    case14: 22,
+    day14: 59,
+    cmi: 1.45,
+    desc: '和曾明雄類似，但人日佔比更高（59%）。<strong>左右差距大</strong>，代表長住案每人住院時間都很長，不是少數極端值拉高，而是長住案普遍住很久。輕重症均有出院延遲現象，整體出院節奏需調整。'
+  },
+  {
+    name: '林珮瑜',
+    status: '❌ 最需關注',
+    statusClass: 'pill-r',
+    case14: 29,
+    day14: 60,
+    cmi: 1.18,
+    desc: '全科最高。近三成病人住超過14天，這三成人吃掉六成床位。更關鍵的是<strong>平均CMI全科最低（1.18）</strong>——住最久的病人，病情反而是全科最輕的。輕症住最久，是最典型的流程問題，與病情因素無關，需優先逐案檢討。'
+  }
+];
+
+function makeVsBar(pct, color) {
+  return '<div class="vs-bar-track"><div class="vs-bar-fill" style="width:' + pct + '%;background:' + color + ';"><span class="vs-bar-pct">' + pct + '%</span></div></div>';
+}
+
+var vsContainer = document.getElementById('vs-cards');
+vsInterpretations.forEach(function(vs) {
+  var case14cls = vs.case14 >= 20 ? 'hi' : vs.case14 <= 5 ? 'lo' : '';
+  var day14cls  = vs.day14  >= 50 ? 'hi' : vs.day14  <= 25 ? 'lo' : '';
+  var cmiCls    = vs.cmi >= 1.7 ? 'lo' : vs.cmi <= 1.25 ? 'hi' : '';
+  var html =
+    '<div class="vs-card">' +
+      '<div class="vs-card-header">' +
+        '<p class="vs-name">' + vs.name + '</p>' +
+        '<span class="vs-status ' + vs.statusClass + '">' + vs.status + '</span>' +
+      '</div>' +
+      '<div class="vs-metrics">' +
+        '<span class="vs-metric">案數&gt;14天 <span class="num ' + case14cls + '">' + vs.case14 + '%</span></span>' +
+        '<span class="vs-metric">人日&gt;14天 <span class="num ' + day14cls  + '">' + vs.day14  + '%</span></span>' +
+        '<span class="vs-metric">平均CMI <span class="num ' + cmiCls + '">' + vs.cmi + '</span></span>' +
+      '</div>' +
+      '<div class="vs-bar-row"><span class="vs-bar-label">案數% &gt;14天</span>' + makeVsBar(vs.case14, '#D85A30') + '</div>' +
+      '<div class="vs-bar-row"><span class="vs-bar-label">人日% &gt;14天</span>' + makeVsBar(vs.day14,  '#9C0006') + '</div>' +
+      '<p class="vs-desc">' + vs.desc + '</p>' +
+    '</div>';
+  vsContainer.innerHTML += html;
+});
+
+
 var C_GREEN = '#1D9E75';
 var C_BLUE  = '#378ADD';
 var C_RED   = '#D85A30';
